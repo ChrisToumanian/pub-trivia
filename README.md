@@ -23,21 +23,19 @@ This is a static web application for Pub Quiz, including the control panel, join
 - styles.css — Shared styles
 
 ## How to Use
-You can serve these static files with any web server. Below are instructions for serving with NGINX.
+The Node server in `api/https-server.js` now serves these static files on port 81.
 
 ### 4. Access the App
 Open your browser and go to:
-- http://your-server-ip/controlpanel.html
-- http://your-server-ip/join.html
-- http://your-server-ip/questions.html
-Or, if using a subfolder:
-- http://your-server-ip/pub/controlpanel.html
+- http://your-server-ip:81/controlpanel.html
+- http://your-server-ip:81/join.html
+- http://your-server-ip:81/questions.html
 
 ---
 
 ## Notes
-- Make sure file permissions allow NGINX to read the files.
-- For production, consider using HTTPS and securing your NGINX configuration.
+- Make sure file permissions allow Node.js to read the files.
+- For production, consider using HTTPS and securing your server configuration.
 
 ---
 
@@ -111,7 +109,7 @@ npm start
 
 ### 5. Access the Application
 
-Open your browser and go to the address shown in the terminal (e.g., https://localhost:PORT/).
+Open your browser and go to the addresses shown in the terminal (API on https port 3000, web on http port 81).
 
 ---
 
@@ -138,6 +136,6 @@ sqlite3 quiz.db
 ```
 
 ## Notes
-- Make sure you have the necessary SSL certificates if using HTTPS.
+- Make sure you have the necessary SSL certificates if using HTTPS for the API.
 - For development, you may need to allow self-signed certificates in your browser.
 - For any issues, check the terminal output for errors.

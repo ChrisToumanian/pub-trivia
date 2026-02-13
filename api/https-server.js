@@ -5,6 +5,10 @@ const fs = require('fs');
 const https = require('https');
 const path = require('path');
 
+const API_PORT = 3000;
+const WEB_PORT = 81;
+const FRONTEND_DIR = path.resolve(__dirname, '..', 'frontend');
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -189,8 +193,15 @@ const sslOptions = {
   cert: fs.readFileSync('/etc/letsencrypt/live/zipfx.net/fullchain.pem')
 };
 
-https.createServer(sslOptions, app).listen(2099, '0.0.0.0', () => {
-  console.log('HTTPS API running on :2099');
+https.createServer(sslOptions, app).listen(API_PORT, '0.0.0.0', () => {
+  console.log(`HTTPS API running on :${API_PORT}`);
+});
+
+const webApp = express();
+webApp.use(express.static(FRONTEND_DIR));
+
+https.createServer(sslOptions, webApp).listen(WEB_PORT, '0.0.0.0', () => {
+  console.log(`Web app running on :${WEB_PORT} (HTTPS)`);
 });
 
 // Get all answers for all questions for the current game

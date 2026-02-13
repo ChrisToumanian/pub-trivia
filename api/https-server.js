@@ -14,7 +14,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const db = new Database('quiz.db');
+const DATA_DIR = path.resolve(__dirname, '..', 'data');
+const DB_PATH = path.resolve(DATA_DIR, 'quiz.db');
+const db = new Database(DB_PATH);
 
 // Load configuration
 let config = {};

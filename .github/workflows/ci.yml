@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - name: Syntax check server
+        run: node --check api/https-server.js
+      - name: Syntax check frontend scripts
+        run: node --check frontend/scripts/brand.js && node --check frontend/scripts/controlpanel.js && node --check frontend/scripts/join.js && node --check frontend/scripts/leaderboard.js && node --check frontend/scripts/questions.js
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - name: Install API dependencies
+        working-directory: api
+        run: npm ci
+      - name: SQLite smoke test
+        run: node -e "const Database=require('better-sqlite3'); const db=new Database(':memory:'); db.exec('select 1'); console.log('sqlite ok');"

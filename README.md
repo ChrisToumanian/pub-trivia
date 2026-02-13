@@ -37,6 +37,19 @@ Pub Trivia Night, made effortless. This app bundles everything a host needs into
 	</tbody>
 </table>
 
+## CI and PR checks
+This repo includes a GitHub Actions workflow that runs on every pull request.
+
+What it checks:
+- Lint: JavaScript syntax checks for the API and frontend scripts.
+- Tests: SQLite smoke test to confirm dependencies install and the driver works.
+
+To require these checks on PRs:
+1. Go to GitHub repo settings.
+2. Open Branch protection rules for your default branch.
+3. Enable "Require status checks to pass before merging".
+4. Select the checks named "Lint" and "Tests".
+
 ## Contents
 - host.html — Admin/control panel interface
 - play.html — Participant join page

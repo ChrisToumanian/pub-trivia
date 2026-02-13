@@ -1,4 +1,4 @@
-# Pub Quiz Web App
+# 🍻 Pub Quiz Web App
 
 Pub Trivia Night, made effortless. This app bundles everything a host needs into a single, reliable setup: a polished host dashboard for running rounds, a frictionless play page for teams to join in seconds, and a clean questions view that keeps the room focused on the fun. It is lightweight, fast to deploy, and easy to run on a single server, so you can spend less time troubleshooting and more time delivering a memorable pub quiz.
 
@@ -9,7 +9,7 @@ Pub Trivia Night, made effortless. This app bundles everything a host needs into
 - Easy to brand: swap logos, colors, and copy without touching code.
 - Built for busy nights: minimal setup, predictable URLs, quick resets.
 
-## Quick start
+## ⚡ Quick start
 1. Install dependencies: `npm install`
 2. Start the server: `cd api && sudo node https-server.js`
 3. Open the pages:
@@ -56,7 +56,7 @@ To require these checks on PRs:
 - questions.html — Quiz/questions interface
 - styles.css — Shared styles
 
-## How to use it
+## ▶️ How to use it
 The Node server in `api/https-server.js` serves the frontend on port 81 and the API on port 3000.
 
 ### Open the app
@@ -70,7 +70,7 @@ The Node server in `api/https-server.js` serves the frontend on port 81 and the 
 3. Teams answer questions in `questions.html`.
 4. Host reviews answers, awards points, and advances questions.
 
-## Customize the look
+## 🎨 Customize the look
 Branding defaults live in shared and are loaded automatically by the frontend.
 
 - Default brand file: `shared/brand.default.json`
@@ -86,9 +86,10 @@ Other easy customization points:
 - Colors, fonts, spacing: Adjust shared styles in `styles.css` (e.g., `:root` variables and component classes like `.card`, `.btn`, `.pill`).
 - Button labels and UI text: Edit `play.html`, `questions.html`, and `host.html`.
 
-# Pub Quiz API
 
-## Setup instructions
+# 🧩 Pub Quiz API
+
+## 🛠️ Setup instructions
 Follow these steps to set up the project from scratch.
 
 ### 1. Install Node.js
@@ -147,7 +148,7 @@ npm start
 ### 5. Access the application
 Open your browser and go to the addresses shown in the terminal (API on https port 3000, web on https port 81).
 
-## Manage with PM2
+## 🧰 Manage with PM2
 ```
 sudo pm2 status
 sudo pm2 start pub-quiz

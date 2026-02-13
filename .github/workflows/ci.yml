@@ -17,6 +17,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
+      - name: Install HTMLHint
+        run: npm install --no-save htmlhint@latest
+      - name: HTML lint
+        run: npx htmlhint "frontend/**/*.html"
       - name: Syntax check server
         run: node --check api/https-server.js
       - name: Syntax check frontend scripts
@@ -36,4 +40,5 @@ jobs:
         working-directory: api
         run: npm ci
       - name: SQLite smoke test
+        working-directory: api
         run: node -e "const Database=require('better-sqlite3'); const db=new Database(':memory:'); db.exec('select 1'); console.log('sqlite ok');"

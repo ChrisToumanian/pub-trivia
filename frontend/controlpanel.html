@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Pub Trivia - Control Panel</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" href="images/icon.png" type="image">
+</head>
+
+<link rel="stylesheet" href="styles.css">
+
+<body class="controlpanel-page">
+
+
+<div id="header"></div>
+
+<div class="container">
+
+  <div class="topbar">
+    <div class="question-block">
+      <div class="footerbar">
+        <button class="btn nav-prev" aria-label="Previous question">
+          <span class="arrow left"></span>
+        </button>
+
+        <button class="btn nav-next" aria-label="Next question">
+          <span class="arrow right"></span>
+        </button>
+      </div>
+      <div id="question-header" class="question-header">Question 1</div>
+    </div>
+    <div class="controls-top">
+      <label class="passcode-label">Passcode
+        <input class="passcode-input" type="text" maxlength="4" inputmode="numeric" placeholder="0000" />
+      </label>
+      <button class="btn reset-game">Reset Game</button>
+      <a class="btn leaderboard-link" href="leaderboard.html" aria-label="Leaderboard">
+        <svg class="leaderboard-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M3 5l4.5 6 4.5-6 4.5 6L21 5v10H3V5zm0 12h18v2H3v-2z" />
+        </svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:220px;">Team</th>
+          <th style="width:350px;">Answer Submitted</th>
+          <th style="width:220px;">Bonus Answer</th>
+          <th style="width:100px;">Chosen Points</th>
+          <th style="width:140px;">Points</th>
+          <th style="width:80px;">Total</th>
+        </tr>
+      </thead>
+      <tbody id="teams-body">
+        <!-- Teams will be populated here by client-side JS -->
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<div id="footer"></div>
+<script src="scripts/brand.js"></script>
+<script src="scripts/controlpanel.js"></script>
+
+</body>
+</html>

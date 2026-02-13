@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pub Trivia — Join Game</title>
+  <link rel="icon" href="images/icon.png" type="image">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="join-page">
+  <div id="header"></div>
+
+  <div class="wrap">
+
+    <main class="card" role="main" aria-label="Join game">
+      <div class="pill-row" aria-hidden="true">
+        <div class="rule"></div>
+        <div class="pill">Join Game</div>
+      </div>
+
+      <div class="field-label">Team name</div>
+      <input class="text" id="teamName" type="text" autocomplete="off" placeholder="e.g., Quiztopher Walken" />
+
+      <div class="field-label">4-digit passcode</div>
+      <div class="code-row" aria-label="Passcode digits">
+        <input class="digit" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 1" />
+        <input class="digit" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 2" />
+        <input class="digit" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 3" />
+        <input class="digit" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 4" />
+      </div>
+
+      <button class="btn" type="button" id="joinBtn">
+        Play
+      </button>
+    </main>
+
+  </div>
+
+  <div id="footer"></div>
+  <script src="scripts/brand.js"></script>
+  <script src="scripts/join.js"></script>
+</body>
+</html>

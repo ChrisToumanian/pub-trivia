@@ -1,0 +1,212 @@
+const express = require('express');
+const Database = require('better-sqlite3');
+const cors = require('cors');
+const fs = require('fs');
+const https = require('https');
+const path = require('path');
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+const db = new Database('quiz.db');
+
+// Load configuration
+let config = {};
+try {
+  const configData = fs.readFileSync('config.json', 'utf8');
+  config = JSON.parse(configData);
+} catch (err) {
+  console.error('Error loading config.json:', err);
+}
+
+function getQuestionConfig(questionNum) {
+  return config.questions && config.questions[questionNum] ? config.questions[questionNum] : {
+    allowUserPoints: true,
+    defaultPoints: 0,
+    allowChangePoints: true
+  };
+}
+
+function getMaxQuestions() {
+  if (!config.questions || typeof config.questions !== 'object') return 0;
+  return Object.keys(config.questions).length;
+}
+
+// Schema
+// Migration: add chosen_points and awarded_points columns if not present
+db.exec(`
+CREATE TABLE IF NOT EXISTS games (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  passcode TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS teams (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  game_id INTEGER,
+  name TEXT,
+  game_code TEXT
+);
+
+CREATE TABLE IF NOT EXISTS answers (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  team_id INTEGER,
+  question_number INTEGER,
+  answer TEXT,
+  bonus_answer TEXT,
+  chosen_points INTEGER DEFAULT 0,
+  awarded_points INTEGER DEFAULT 0
+);
+`);
+
+// Migrate old points column if present
+try {
+  const columns = db.prepare("PRAGMA table_info(answers)").all();
+  const hasPoints = columns.some(col => col.name === 'points');
+  const hasChosen = columns.some(col => col.name === 'chosen_points');
+  if (hasPoints && hasChosen) {
+    // Copy points to chosen_points if chosen_points is 0
+    db.prepare('UPDATE answers SET chosen_points = points WHERE chosen_points = 0').run();
+    // Remove points column (SQLite doesn't support DROP COLUMN directly, so skip for now)
+  }
+} catch (e) { console.error('Migration error:', e); }
+
+// Get current game
+function getCurrentGame() {
+  return db.prepare('SELECT * FROM games ORDER BY created_at DESC LIMIT 1').get();
+}
+
+// Initialize with a game if none exists
+if (!getCurrentGame()) {
+  db.prepare('INSERT INTO games (passcode) VALUES (?)').run('0000');
+}
+
+// Get current game info
+app.get('/current-game', (req, res) => {
+  const game = getCurrentGame();
+  res.json(game ? { id: game.id, passcode: game.passcode } : null);
+});
+
+// Get question configuration
+app.get('/question-config/:number', (req, res) => {
+  const questionNum = req.params.number;
+  const questionConfig = getQuestionConfig(questionNum);
+  res.json(questionConfig);
+});
+
+// Public config info for clients
+app.get('/config', (req, res) => {
+  res.json({ maxQuestions: getMaxQuestions() });
+});
+
+// Join game
+app.post('/join', (req, res) => {
+  const { name, code } = req.body;
+  const game = getCurrentGame();
+  
+  if (!game || game.passcode !== code) {
+    return res.status(401).json({ error: 'Invalid passcode' });
+  }
+  
+  const stmt = db.prepare('INSERT INTO teams (game_id, name, game_code) VALUES (?, ?, ?)');
+  const info = stmt.run(game.id, name, code);
+  res.json({ teamId: info.lastInsertRowid });
+});
+
+// Submit answer
+app.post('/answer', (req, res) => {
+  const { teamId, question, answer, bonusAnswer, chosenPoints, awardedPoints, points } = req.body;
+  // If points is present and neither chosenPoints nor awardedPoints, treat as chosenPoints (legacy)
+  const chosen = chosenPoints !== undefined ? chosenPoints : (points !== undefined ? points : undefined);
+  const awarded = awardedPoints !== undefined ? awardedPoints : undefined;
+  const existing = db.prepare('SELECT id FROM answers WHERE team_id = ? AND question_number = ?').get(teamId, question);
+  if (existing) {
+    // If host is awarding points, only update awarded_points
+    if (awarded !== undefined) {
+      db.prepare('UPDATE answers SET awarded_points = ? WHERE id = ?')
+        .run(awarded, existing.id);
+    } else if (answer !== undefined || bonusAnswer !== undefined || chosen !== undefined) {
+      db.prepare('UPDATE answers SET answer = ?, bonus_answer = ?, chosen_points = ? WHERE id = ?')
+        .run(answer || null, bonusAnswer || null, chosen || 0, existing.id);
+    } else {
+      return res.status(409).json({ error: 'Answer already submitted' });
+    }
+  } else {
+    db.prepare(`INSERT INTO answers (team_id, question_number, answer, bonus_answer, chosen_points, awarded_points) VALUES (?, ?, ?, ?, ?, ?)`)
+      .run(teamId, question, answer, bonusAnswer || null, chosen || 0, awarded || 0);
+  }
+  res.json({ ok: true });
+});
+
+// Host view - get answers for a question in current game
+app.get('/answers/:question', (req, res) => {
+  const game = getCurrentGame();
+  if (!game) {
+    return res.json([]);
+  }
+  const rows = db.prepare(`
+    SELECT teams.id, teams.name, answers.*
+    FROM answers
+    JOIN teams ON teams.id = answers.team_id
+    WHERE question_number = ? AND teams.game_id = ?
+  `).all(req.params.question, game.id);
+
+  res.json(rows);
+});
+
+// Teams list for current game
+app.get('/teams', (req, res) => {
+  const game = getCurrentGame();
+  if (!game) {
+    return res.json([]);
+  }
+  const rows = db.prepare('SELECT id, name, game_code FROM teams WHERE game_id = ?').all(game.id);
+  res.json(rows);
+});
+
+// Reset game (clear all data for current game, create new game)
+app.post('/reset', (req, res) => {
+  const { passcode } = req.body;
+  
+  if (!passcode || passcode.length !== 4) {
+    return res.status(400).json({ error: 'Passcode must be 4 digits' });
+  }
+  
+  const game = getCurrentGame();
+  if (game) {
+    db.prepare('DELETE FROM answers WHERE team_id IN (SELECT id FROM teams WHERE game_id = ?)').run(game.id);
+    db.prepare('DELETE FROM teams WHERE game_id = ?').run(game.id);
+  }
+  
+  const newGame = db.prepare('INSERT INTO games (passcode) VALUES (?)').run(passcode);
+  res.json({ ok: true, gameId: newGame.lastInsertRowid, passcode });
+});
+
+// HTTPS setup
+const sslOptions = {
+  key: fs.readFileSync('/etc/letsencrypt/live/zipfx.net/privkey.pem'),
+  cert: fs.readFileSync('/etc/letsencrypt/live/zipfx.net/fullchain.pem')
+};
+
+https.createServer(sslOptions, app).listen(2099, '0.0.0.0', () => {
+  console.log('HTTPS API running on :2099');
+});
+
+// Get all answers for all questions for the current game
+app.get('/all-answers', (req, res) => {
+  const game = getCurrentGame();
+  if (!game) {
+    return res.json([]);
+  }
+  // Get all teams for the current game
+  const teams = db.prepare('SELECT id, name FROM teams WHERE game_id = ?').all(game.id);
+  // Get all answers for the current game
+  const answers = db.prepare(`
+    SELECT teams.id as team_id, teams.name as team_name, answers.question_number, answers.answer, answers.bonus_answer, answers.chosen_points, answers.awarded_points
+    FROM answers
+    JOIN teams ON teams.id = answers.team_id
+    WHERE teams.game_id = ?
+  `).all(game.id);
+  res.json({ teams, answers });
+});

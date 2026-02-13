@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pub Trivia — Question 1</title>
+  <link rel="icon" href="images/icon.png" type="image">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="questions-page">
+  <div id="header"></div>
+
+  <main class="card" role="main" aria-label="Trivia question submission">
+    <div class="question-progress" role="progressbar" aria-label="Question progress" aria-valuemin="1" aria-valuemax="1" aria-valuenow="1">
+      <div class="question-progress__bar"></div>
+    </div>
+
+    <div class="question-header">Question 1</div>
+
+    <div class="team-name-wrap">
+      <div id="teamNameDisplay" class="team-name" aria-live="polite"></div>
+    </div>
+
+    <div class="field-label">Answer</div>
+    <textarea class="answer" name="answer" placeholder="Type your answer here..."></textarea>
+
+    <div class="field-label bonus-label" style="display:none;">Bonus Answer</div>
+    <textarea class="bonus-answer" name="bonus-answer" placeholder="Type your bonus answer here..." style="display:none;"></textarea>
+
+    <div class="points-wrap">
+      <div class="points-label">Points</div>
+      <div class="points-buttons" role="group" aria-label="Points"></div>
+    </div>
+
+    <div class="submit-row">
+      <button class="btn" type="button">
+        <span class="btn__label">Submit Answer</span>
+        <span class="btn__sparkle-layer" aria-hidden="true"></span>
+      </button>
+    </div>
+
+  </main>
+
+  <div id="footer"></div>
+  <script src="scripts/brand.js"></script>
+  <script src="scripts/questions.js"></script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Pub Trivia - Leaderboard</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" href="images/icon.png" type="image">
+</head>
+
+<link rel="stylesheet" href="styles.css">
+
+<body class="controlpanel-page leaderboard-page">
+
+
+<div id="header"></div>
+
+<div class="container">
+
+  <div class="topbar">
+    <div class="question-block">
+      <div id="question-header" class="question-header">Leaderboard</div>
+    </div>
+    <div class="controls-top">
+      <a class="btn leaderboard-link" href="controlpanel.html" aria-label="Control panel">
+        <svg class="leaderboard-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M4 7h10v2H4V7zm0 8h10v2H4v-2zm12-8h4v2h-4V7zm0 8h4v2h-4v-2zM8 5h2v6H8V5zm6 8h2v6h-2v-6z" />
+        </svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:50px;">Rank</th>
+          <th style="width:320px;">Team</th>
+          <th style="width:50px;">Total</th>
+        </tr>
+      </thead>
+      <tbody id="leaderboard-body">
+        <!-- Leaderboard will be populated here by client-side JS -->
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<div id="footer"></div>
+<script src="scripts/brand.js"></script>
+<script src="scripts/leaderboard.js"></script>
+
+</body>
+</html>

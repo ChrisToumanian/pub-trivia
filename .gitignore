@@ -1,4 +1,6 @@
 api/node_modules/
 api/quiz.db
+quiz.db
 shared/config.json
 shared/brand.json
+frontend/images/brand-header.png

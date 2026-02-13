@@ -16,6 +16,9 @@ app.use(express.json());
 
 const DATA_DIR = path.resolve(__dirname, '..', 'data');
 const DB_PATH = path.resolve(DATA_DIR, 'quiz.db');
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
 const db = new Database(DB_PATH);
 
 // Load configuration

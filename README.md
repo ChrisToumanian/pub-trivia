@@ -1,6 +1,6 @@
-# 🍻 Pub Quiz Web App
+# 🍻 Open Trivia Night
 
-Pub Trivia Night, made effortless. This app bundles everything a host needs into a single, reliable setup: a polished host dashboard for running rounds, a frictionless play page for teams to join in seconds, and a clean questions view that keeps the room focused on the fun. It is lightweight, fast to deploy, and easy to run on a single server, so you can spend less time troubleshooting and more time delivering a memorable pub quiz.
+Trivia night, made effortless. This app bundles everything a host needs into a single, reliable setup: a polished host dashboard for running rounds, a frictionless play page for teams to join in seconds, and a clean questions view that keeps the room focused on the fun. It is lightweight, fast to deploy, and easy to run on a single server, so you can spend less time troubleshooting and more time delivering a memorable trivia night.
 
 ## Why hosts love it
 - One server, one command: the web UI and API run together.
@@ -87,7 +87,7 @@ Other easy customization points:
 - Button labels and UI text: Edit `play.html`, `questions.html`, and `host.html`.
 
 
-# 🧩 Pub Quiz API
+# 🧩 Open Trivia Night API
 
 ## 🛠️ Setup instructions
 Follow these steps to set up the project from scratch.
@@ -109,7 +109,7 @@ If you haven't already, clone this repository:
 
 ```
 git clone <repository-url>
-cd pub-quiz
+cd open-trivia-night
 ```
 
 ### 3. Install dependencies
@@ -151,16 +151,16 @@ Open your browser and go to the addresses shown in the terminal (API on https po
 ## 🧰 Manage with PM2
 ```
 sudo pm2 status
-sudo pm2 start pub-quiz
-sudo pm2 stop pub-quiz
-sudo pm2 delete pub-quiz
-sudo pm2 start https-server.js --name pub-quiz
-sudo pm2 logs pub-quiz
+sudo pm2 start open-trivia-night
+sudo pm2 stop open-trivia-night
+sudo pm2 delete open-trivia-night
+sudo pm2 start https-server.js --name open-trivia-night
+sudo pm2 logs open-trivia-night
 ```
 
 ## Inspect database
 ```
-cd pub-quiz
+cd open-trivia-night
 sqlite3 quiz.db
 ```
 

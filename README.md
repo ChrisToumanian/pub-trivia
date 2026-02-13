@@ -27,9 +27,9 @@ The Node server in `api/https-server.js` now serves these static files on port 8
 
 ### 4. Access the App
 Open your browser and go to:
-- http://your-server-ip:81/controlpanel.html
-- http://your-server-ip:81/join.html
-- http://your-server-ip:81/questions.html
+- https://your-server-ip:81/controlpanel.html
+- https://your-server-ip:81/join.html
+- https://your-server-ip:81/questions.html
 
 ---
 
@@ -40,7 +40,14 @@ Open your browser and go to:
 ---
 
 ## Customize The Look
-Here are the main places to tailor the app to your brand:
+Branding defaults now live in shared and are loaded automatically by the frontend.
+
+- Default brand file: `shared/brand.default.json`
+- Optional override (ignored by git): `shared/brand.json`
+
+To change the theme, edit `shared/brand.json` (or copy the default and adjust it). The app will prefer the override if it exists.
+
+Here are other places to tailor the app to your brand:
 
 - Header logo: Replace `images/logo-header.png` and/or edit `header.html` to change the header markup.
 - Footer text/links: Edit `footer.html`.
@@ -90,6 +97,7 @@ This will install all dependencies listed in `package.json` (including Express, 
 To start the server, run:
 
 ```
+cd api
 sudo node https-server.js
 ```
 
@@ -97,7 +105,7 @@ Or, if you want to use `npm start`, add a start script to your `package.json`:
 
 ```
 "scripts": {
-	"start": "sudo node https-server.js"
+	"start": "cd api && sudo node https-server.js"
 }
 ```
 
@@ -109,7 +117,7 @@ npm start
 
 ### 5. Access the Application
 
-Open your browser and go to the addresses shown in the terminal (API on https port 3000, web on http port 81).
+Open your browser and go to the addresses shown in the terminal (API on https port 3000, web on https port 81).
 
 ---
 
@@ -139,3 +147,11 @@ sqlite3 quiz.db
 - Make sure you have the necessary SSL certificates if using HTTPS for the API.
 - For development, you may need to allow self-signed certificates in your browser.
 - For any issues, check the terminal output for errors.
+
+## Game Configuration
+Game config defaults now live in shared and are loaded by the API.
+
+- Default config file: `shared/config.default.json`
+- Optional override (ignored by git): `shared/config.json`
+
+To customize questions, copy `shared/config.default.json` to `shared/config.json` and edit the override. The API will prefer the override if it exists.

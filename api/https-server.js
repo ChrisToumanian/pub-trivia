@@ -8,6 +8,7 @@ const path = require('path');
 const API_PORT = 3000;
 const WEB_PORT = 81;
 const FRONTEND_DIR = path.resolve(__dirname, '..', 'frontend');
+const SHARED_DIR = path.resolve(__dirname, '..', 'shared');
 
 const app = express();
 app.use(cors());
@@ -17,8 +18,11 @@ const db = new Database('quiz.db');
 
 // Load configuration
 let config = {};
+const CONFIG_OVERRIDE_PATH = path.resolve(SHARED_DIR, 'config.json');
+const CONFIG_DEFAULT_PATH = path.resolve(SHARED_DIR, 'config.default.json');
+const CONFIG_PATH = fs.existsSync(CONFIG_OVERRIDE_PATH) ? CONFIG_OVERRIDE_PATH : CONFIG_DEFAULT_PATH;
 try {
-  const configData = fs.readFileSync('config.json', 'utf8');
+  const configData = fs.readFileSync(CONFIG_PATH, 'utf8');
   config = JSON.parse(configData);
 } catch (err) {
   console.error('Error loading config.json:', err);
@@ -199,6 +203,7 @@ https.createServer(sslOptions, app).listen(API_PORT, '0.0.0.0', () => {
 
 const webApp = express();
 webApp.use(express.static(FRONTEND_DIR));
+webApp.use('/shared', express.static(SHARED_DIR));
 
 https.createServer(sslOptions, webApp).listen(WEB_PORT, '0.0.0.0', () => {
   console.log(`Web app running on :${WEB_PORT} (HTTPS)`);

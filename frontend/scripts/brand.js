@@ -1,4 +1,5 @@
-const BRAND_PATH = 'theme/brand.json';
+const BRAND_OVERRIDE_PATH = 'shared/brand.json';
+const BRAND_DEFAULT_PATH = 'shared/brand.default.json';
 
 async function fetchText(path) {
   const res = await fetch(path, { cache: 'no-store' });
@@ -10,6 +11,14 @@ async function fetchJson(path) {
   const res = await fetch(path, { cache: 'no-store' });
   if (!res.ok) throw new Error(`Failed to load ${path}`);
   return res.json();
+}
+
+async function loadBrandJson() {
+  try {
+    return await fetchJson(BRAND_OVERRIDE_PATH);
+  } catch (err) {
+    return await fetchJson(BRAND_DEFAULT_PATH);
+  }
 }
 
 function applyBrand(brand) {
@@ -66,7 +75,7 @@ async function loadBrandAssets() {
   const footerEl = document.getElementById('footer');
 
   try {
-    const requests = [fetchJson(BRAND_PATH)];
+    const requests = [loadBrandJson()];
     if (headerEl) requests.push(fetchText('header.html'));
     if (footerEl) requests.push(fetchText('footer.html'));
 

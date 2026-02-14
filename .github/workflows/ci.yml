@@ -24,7 +24,7 @@ jobs:
       - name: Syntax check server
         run: node --check api/https-server.js
       - name: Syntax check frontend scripts
-        run: node --check frontend/scripts/brand.js && node --check frontend/scripts/controlpanel.js && node --check frontend/scripts/join.js && node --check frontend/scripts/leaderboard.js && node --check frontend/scripts/questions.js
+        run: node --check frontend/scripts/brand.js && node --check frontend/scripts/host.js && node --check frontend/scripts/leaderboard.js && node --check frontend/scripts/play.js && node --check frontend/scripts/questions.js
 
   test:
     name: Tests

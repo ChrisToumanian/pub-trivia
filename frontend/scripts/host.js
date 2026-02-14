@@ -169,6 +169,8 @@ document.querySelector('.reset-game').addEventListener('click', async () => {
     passInput.style.color = '#999';
     answersMap = {};
     currentQuestion = 1;
+    questionMetaCache.clear();
+    questionLabelCache.clear();
     await loadTeams();
     await loadAnswers();
     await updatePill();
@@ -215,6 +217,8 @@ let maxQuestions = 20;
 let currentQuestion = 1;
 const questionLabelCache = new Map();
 const questionMetaCache = new Map();
+let categoriesList = [];
+let categoriesLoaded = false;
 
 function initCurrentQuestion() {
   const storedQuestion = parseInt(localStorage.getItem(QUESTION_STORAGE_KEY) || '', 10);
@@ -248,6 +252,75 @@ async function loadQuestionMeta(questionNum) {
   }
 }
 
+async function loadCategoriesList() {
+  if (categoriesLoaded && categoriesList.length) return categoriesList;
+  try {
+    const res = await fetch(API_BASE + '/categories', { cache: 'no-store' });
+    if (!res.ok) throw new Error('Failed to load categories');
+    const data = await res.json();
+    const list = Array.isArray(data.categories) ? data.categories : (Array.isArray(data) ? data : []);
+    categoriesList = list
+      .filter(item => item && typeof item === 'object')
+      .map(item => ({
+        label: typeof item.label === 'string' ? item.label : '',
+        icon: typeof item.icon === 'string' ? item.icon : ''
+      }));
+    categoriesLoaded = true;
+  } catch (err) {
+    console.error('Error loading categories:', err);
+    categoriesList = [];
+    categoriesLoaded = false;
+  }
+  return categoriesList;
+}
+
+function renderCategorySelect(meta) {
+  const categorySelect = document.getElementById('categorySelect');
+  if (!categorySelect) return;
+
+  const categoryText = String(meta.category || '').trim();
+  const iconText = String(meta.icon || '').trim();
+  categorySelect.innerHTML = '';
+
+  const blankOption = document.createElement('option');
+  blankOption.value = '';
+  blankOption.textContent = 'Choose a category';
+  categorySelect.appendChild(blankOption);
+
+  categorySelect.disabled = false;
+
+  categoriesList.forEach((item, index) => {
+    const option = document.createElement('option');
+    option.value = String(index);
+    option.dataset.label = item.label;
+    option.dataset.icon = item.icon;
+    const labelText = `${item.icon || ''} ${item.label || ''}`.trim();
+    option.textContent = labelText || 'Unnamed category';
+    categorySelect.appendChild(option);
+  });
+
+  if (categoryText || iconText) {
+    const matchIndex = categoriesList.findIndex(item =>
+      String(item.label || '').trim() === categoryText && String(item.icon || '').trim() === iconText
+    );
+    if (matchIndex >= 0) {
+      categorySelect.value = String(matchIndex);
+    } else {
+      const customOption = document.createElement('option');
+      customOption.value = '__custom';
+      customOption.textContent = `${iconText} ${categoryText}`.trim();
+      customOption.dataset.label = categoryText;
+      customOption.dataset.icon = iconText;
+      categorySelect.appendChild(customOption);
+      categorySelect.value = '__custom';
+    }
+  } else {
+    categorySelect.value = '';
+  }
+
+  categorySelect.classList.toggle('is-placeholder', categorySelect.value === '');
+}
+
 function updateNavButtons() {
   const prevBtn = document.querySelector('.nav-prev');
   const nextBtn = document.querySelector('.nav-next');
@@ -270,31 +343,8 @@ async function updatePill() {
   document.querySelector('.question-header').textContent = meta.label;
   localStorage.setItem(QUESTION_STORAGE_KEY, String(currentQuestion));
   updateNavButtons();
-
-  const categoryDisplay = document.getElementById('categoryDisplay');
-  const categoryIcon = document.getElementById('categoryIcon');
-  const categoryLabel = document.getElementById('categoryLabel');
-  if (!categoryDisplay || !categoryIcon || !categoryLabel) return;
-
-  const categoryText = String(meta.category || '').trim();
-  const iconText = String(meta.icon || '').trim();
-  if (categoryText || iconText) {
-    categoryDisplay.style.display = 'flex';
-    if (iconText) {
-      categoryIcon.textContent = iconText;
-      categoryIcon.style.display = 'inline';
-    } else {
-      categoryIcon.style.display = 'none';
-    }
-    if (categoryText) {
-      categoryLabel.textContent = categoryText;
-      categoryLabel.style.display = 'inline';
-    } else {
-      categoryLabel.style.display = 'none';
-    }
-  } else {
-    categoryDisplay.style.display = 'none';
-  }
+  await loadCategoriesList();
+  renderCategorySelect(meta);
 }
 
 async function reloadForQuestion() {
@@ -373,6 +423,7 @@ function getCurrentQuestion() {
         passInput.style.color = '#999';
       }
     }
+    await loadCategoriesList();
   } catch (err) {
     console.error('Error loading current game:', err);
   }
@@ -387,6 +438,34 @@ function getCurrentQuestion() {
   });
   await reloadForQuestion();
 })();
+
+const categorySelect = document.getElementById('categorySelect');
+if (categorySelect) {
+  categorySelect.addEventListener('change', async () => {
+    if (categorySelect.value === '__custom' || categorySelect.disabled) return;
+    categorySelect.classList.toggle('is-placeholder', categorySelect.value === '');
+    const option = categorySelect.options[categorySelect.selectedIndex];
+    const category = option?.dataset.label || '';
+    const icon = option?.dataset.icon || '';
+    try {
+      await fetch(API_BASE + '/question-category', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          questionNumber: currentQuestion,
+          category,
+          icon
+        })
+      });
+      const meta = await loadQuestionMeta(currentQuestion);
+      meta.category = category;
+      meta.icon = icon;
+      questionMetaCache.set(currentQuestion, meta);
+    } catch (err) {
+      console.error('Error saving category:', err);
+    }
+  });
+}
 
 setInterval(async () => {
   if (document.visibilityState !== 'visible') return;

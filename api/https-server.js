@@ -33,12 +33,37 @@ try {
   console.error('Error loading config.json:', err);
 }
 
+// Load categories list
+let categories = [];
+const CATEGORIES_OVERRIDE_PATH = path.resolve(SHARED_DIR, 'categories.json');
+const CATEGORIES_DEFAULT_PATH = path.resolve(SHARED_DIR, 'categories.default.json');
+const CATEGORIES_PATH = fs.existsSync(CATEGORIES_OVERRIDE_PATH) ? CATEGORIES_OVERRIDE_PATH : CATEGORIES_DEFAULT_PATH;
+try {
+  const categoriesData = fs.readFileSync(CATEGORIES_PATH, 'utf8');
+  const parsed = JSON.parse(categoriesData);
+  const list = Array.isArray(parsed) ? parsed : parsed.categories;
+  if (Array.isArray(list)) {
+    categories = list
+      .filter(item => item && typeof item === 'object')
+      .map(item => ({
+        label: typeof item.label === 'string' ? item.label : '',
+        icon: typeof item.icon === 'string' ? item.icon : ''
+      }));
+  }
+} catch (err) {
+  console.error('Error loading categories.json:', err);
+}
+
 function getQuestionConfig(questionNum) {
   return config.questions && config.questions[questionNum] ? config.questions[questionNum] : {
     allowUserPoints: true,
     defaultPoints: 0,
     allowChangePoints: true
   };
+}
+
+function getQuestionCategory(questionNum) {
+  return db.prepare('SELECT category, icon FROM question_categories WHERE question_number = ?').get(questionNum);
 }
 
 function getMaxQuestions() {
@@ -70,6 +95,12 @@ CREATE TABLE IF NOT EXISTS answers (
   bonus_answer TEXT,
   chosen_points INTEGER DEFAULT 0,
   awarded_points INTEGER DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS question_categories (
+  question_number INTEGER PRIMARY KEY,
+  category TEXT,
+  icon TEXT
 );
 `);
 
@@ -105,12 +136,46 @@ app.get('/current-game', (req, res) => {
 app.get('/question-config/:number', (req, res) => {
   const questionNum = req.params.number;
   const questionConfig = getQuestionConfig(questionNum);
-  res.json(questionConfig);
+  const stored = getQuestionCategory(questionNum) || {};
+  const category = typeof stored.category === 'string' ? stored.category : (questionConfig.category || '');
+  const icon = typeof stored.icon === 'string' ? stored.icon : (questionConfig.icon || '');
+  res.json({
+    ...questionConfig,
+    category,
+    icon
+  });
 });
 
 // Public config info for clients
 app.get('/config', (req, res) => {
   res.json({ maxQuestions: getMaxQuestions() });
+});
+
+// Categories list for host dropdown
+app.get('/categories', (req, res) => {
+  res.json({ categories });
+});
+
+// Save category selection per question
+app.post('/question-category', (req, res) => {
+  const questionNumber = Number(req.body.questionNumber);
+  if (!Number.isFinite(questionNumber) || questionNumber < 1) {
+    return res.status(400).json({ error: 'Invalid question number' });
+  }
+  const category = typeof req.body.category === 'string' ? req.body.category.trim() : '';
+  const icon = typeof req.body.icon === 'string' ? req.body.icon.trim() : '';
+  if (!category && !icon) {
+    db.prepare('DELETE FROM question_categories WHERE question_number = ?').run(questionNumber);
+    return res.json({ ok: true });
+  }
+  db.prepare(`
+    INSERT INTO question_categories (question_number, category, icon)
+    VALUES (?, ?, ?)
+    ON CONFLICT(question_number) DO UPDATE SET
+      category = excluded.category,
+      icon = excluded.icon
+  `).run(questionNumber, category, icon);
+  res.json({ ok: true });
 });
 
 // Join game
@@ -191,6 +256,7 @@ app.post('/reset', (req, res) => {
     db.prepare('DELETE FROM answers WHERE team_id IN (SELECT id FROM teams WHERE game_id = ?)').run(game.id);
     db.prepare('DELETE FROM teams WHERE game_id = ?').run(game.id);
   }
+  db.prepare('DELETE FROM question_categories').run();
   
   const newGame = db.prepare('INSERT INTO games (passcode) VALUES (?)').run(passcode);
   res.json({ ok: true, gameId: newGame.lastInsertRowid, passcode });

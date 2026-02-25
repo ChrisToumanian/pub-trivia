@@ -29,5 +29,8 @@ EXPOSE 8080
 # Set environment variable
 ENV PORT=8080
 
+# Override any parent image entrypoint
+ENTRYPOINT []
+
 # Start the application
 CMD ["node", "api/https-server.js"]

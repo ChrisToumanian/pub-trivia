@@ -145,6 +145,11 @@ if (!getCurrentGame()) {
 // Create API router
 const apiRouter = express.Router();
 
+// Health check endpoint (no database required)
+apiRouter.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // Mount all API routes on the router
 apiRouter.get('/current-game', (req, res) => {
   const game = getCurrentGame();
@@ -300,11 +305,19 @@ apiRouter.get('/all-answers', (req, res) => {
 });
 
 // Mount static files at root
+console.log('Setting up static file serving...');
+console.log('FRONTEND_DIR:', FRONTEND_DIR);
+console.log('SHARED_DIR:', SHARED_DIR);
+console.log('FRONTEND_DIR exists:', fs.existsSync(FRONTEND_DIR));
+console.log('SHARED_DIR exists:', fs.existsSync(SHARED_DIR));
+
 app.use(express.static(FRONTEND_DIR));
 app.use('/shared', express.static(SHARED_DIR));
 
 // Mount API routes under /api
 app.use('/api', apiRouter);
+
+console.log('Routes configured successfully');
 
 // Start server (with conditional HTTPS support)
 const SSL_KEY_PATH = '/etc/letsencrypt/live/zipfx.net/privkey.pem';

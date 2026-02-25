@@ -11,10 +11,11 @@ Trivia night, made effortless. This app bundles everything a host needs into a s
 
 ## ⚡ Quick start
 1. Install dependencies: `npm install`
-2. Start the server: `cd api && node https-server.js`
-   - The server runs on port 8080 by default
+2. Start the server: `npm start`
+   - The server runs on port 8080 by default (or use `PORT=3000 npm start` for a custom port)
+   - Uses HTTPS if SSL certificates are found, otherwise HTTP
 3. Open the pages:
-	- http://localhost:8080/host.html
+	- http://localhost:8080/host.html (or https:// if using SSL)
 	- http://localhost:8080/play.html
 	- http://localhost:8080/questions.html
 

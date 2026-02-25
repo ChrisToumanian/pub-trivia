@@ -1,14 +1,15 @@
 {
-  "name": "pub-quiz-api",
+  "name": "open-trivia-night",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "Trivia night, made effortless",
+  "main": "api/https-server.js",
   "scripts": {
+    "start": "node api/https-server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": ["trivia", "quiz", "game"],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "better-sqlite3": "^12.6.2",
     "cors": "^2.8.6",

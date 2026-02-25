@@ -1,3 +1,5 @@
-# node https-server.js
-cd api && npm install
-sudo pm2 start https-server.js --name open-trivia-night
+#!/bin/bash
+cd /home/ubuntu/open-trivia-night
+npm install
+sudo pm2 start ecosystem.config.js
+sudo pm2 save

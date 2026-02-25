@@ -56,7 +56,20 @@ async function loadLeaderboard() {
       if (totalB !== totalA) return totalB - totalA;
       return String(a.name).localeCompare(String(b.name));
     });
-    tbody.innerHTML = sortedTeams.map((team, index) => createLeaderboardRow(team, index + 1)).join('');
+    
+    // Assign ranks, accounting for ties
+    let currentRank = 1;
+    let previousScore = null;
+    const teamsWithRanks = sortedTeams.map((team, index) => {
+      const score = totalPointsMap[team.id] ?? 0;
+      if (previousScore !== null && score < previousScore) {
+        currentRank = index + 1;
+      }
+      previousScore = score;
+      return { team, rank: currentRank };
+    });
+    
+    tbody.innerHTML = teamsWithRanks.map(({ team, rank }) => createLeaderboardRow(team, rank)).join('');
   } catch (err) {
     console.error(err);
     tbody.innerHTML = '<tr><td colspan="3">Failed to load leaderboard</td></tr>';
